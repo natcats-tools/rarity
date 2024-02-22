@@ -1,0 +1,59 @@
+.pagination {
+    justify-content: center;
+}
+
+#result ul {
+    list-style-type: none none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+#result ul li {
+    display: flex;
+    flex-direction: column;
+    width: 80px;
+    height: 80px;
+    background: #201f27;
+    border: 1px solid #fff;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+#result ul li span {
+    font-weight: bold;
+    font-size: 0.8rem;
+    margin-bottom: 0;
+}
+
+#result ul li .buy {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: black;
+    color: white;
+    font-size: 10px;
+    padding: 2px 3px;
+    text-decoration: none;
+}
+
+#result ul li .buy:hover {
+    text-decoration: underline;
+} 
+
+.pixel-image {
+    margin-top: 1px;
+    width: 64px;
+    height: 64px;
+    image-rendering: pixelated;
+}
+
+.h6 a { color: white; text-decoration: none; }
+
+.remove-filter {
+    cursor: pointer;
+}
