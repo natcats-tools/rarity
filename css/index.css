@@ -57,3 +57,14 @@
 .remove-filter {
     cursor: pointer;
 }
+
+.btn-magiceden {
+    background-color: rgb(233, 58, 136);
+    transition: all 0.3s ease;
+}
+.btn-magiceden:hover,
+.btn-magiceden:visited,
+.btn-magiceden:active {
+    background-color: rgb(233, 58, 136) !important;
+    opacity: 0.5;
+}

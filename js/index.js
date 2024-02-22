@@ -35,7 +35,7 @@ const showItems = page => {
         let id = item.name.replace('Natcat #','')
         html += `
             <li title="${item.name}">
-                <img class="pixel-image" src="./img/${id}.png">
+                <img class="pixel-image" src="./img/${id}.png" data-bs-toggle="modal" data-bs-target="#modal" data-natcat-id="${id}">
                 <span class="h6"><a href="./img/${id}.png" target="_blank">${id}</a></span>
                 <a href="${item.attributes.find(a => a.trait_type === 'magic_eden_link').value}" class="buy" target="_blank">buy</a>
             </li>`
@@ -234,6 +234,60 @@ const makeFilter = () => {
     setAmount()
 }
 
+const setupModal = () => {
+    try {
+        const modal = document.getElementById('modal')
+        if (modal) {
+            modal.addEventListener('show.bs.modal', event => {
+                const img = event.relatedTarget
+                const catId = parseInt(img.getAttribute('data-natcat-id'), 10)
+                const cat = natcats.find(c => c.name === `Natcat #${catId}`)
+
+                if(cat) {
+                    const {
+                        attributes,
+                        name
+                    } = cat
+
+                    const modalTitle = modal.querySelector('.modal-title')
+                    const modalBody = modal.querySelector('.modal-body')
+
+                    let html = '<div class="row">'
+                    html += '<div class="col-12 col-md-4 mb-4 mb-md-0">'
+                    html += `<img src="./img/${catId}.png" style="width: 100%" />`
+
+                    html += '<div class="d-grid gap-2 pt-3">'
+                    html += `<a href="${attributes.find(a => a.trait_type === 'magic_eden_link').value}" target="_blank" class="btn btn-magiceden">Go to MagicEden</a>`
+                    html += '</div>'
+
+                    html += '</div>'
+
+                    html += '<div class="col-12 col-md-8">'
+                    html += `<table class="table table-striped"><tbody>`
+
+                    attributes.forEach(attr => {
+                        const { trait_type, value } = attr
+
+                        if(!['magic_eden_link'].includes(trait_type) && ![false, null].includes(value)) {
+                            html += `<tr><td>${trait_type}</td><td>${value}</td></tr>`
+                        }
+                    })
+
+                    html += '</tbody></table>'
+
+                    html += '</div>'
+
+                    html += '</div>'
+                    modalTitle.textContent = `${name}`
+                    modalBody.innerHTML = html
+                }
+            })
+        }                
+    } catch(e) {
+        console.log(e)
+    }
+}
+
 const init = async () => {
     natcats = await fetch('./traits.json').then(res=>res.json()).catch(e=>console.log(e))
 
@@ -243,6 +297,8 @@ const init = async () => {
 
     // load first page by default
     showItems(currentPage)
+
+    setupModal()
 }
 
 init()
