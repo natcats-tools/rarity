@@ -330,7 +330,7 @@ const setupModal = () => {
 }
 
 const init = async () => {
-    natcats = await fetch('./traits.json?ts=1708854844216').then(res=>res.json()).catch(e=>console.log(e))
+    natcats = await fetch('./traits.json?ts=1708880751776').then(res=>res.json()).catch(e=>console.log(e))
 
     if(params_natcats.length) {
         filtered_natcats = natcats.filter(n => params_natcats.includes(n.id.toString()))
