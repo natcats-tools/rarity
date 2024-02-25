@@ -13,6 +13,12 @@ const result = document.querySelector('#result')
 let numberOfPages = 10
 let currentPage = 1
 
+const params = new Proxy(new URLSearchParams(window.location.search), {
+    get: (searchParams, prop) => searchParams.get(prop),
+})
+
+let params_natcats = params && params.natcats ? params.natcats.split(',') : []
+
 const setActivePage = page => {
     // reset all active states first
     document.querySelectorAll('.page-item').forEach(item=>{
@@ -52,6 +58,23 @@ const showItems = page => {
 
 const setAmount = () => {
     filteredAmount.innerHTML = `Result: ${natcats_result.length} Natcats`
+
+    if(params_natcats.length) {
+        filteredAmount.innerHTML += ` <button id="remove_preselected" class="btn btn-danger ms-3">show all natcats</button>`
+
+        document.querySelector('#remove_preselected').addEventListener('click', e => {
+            e.preventDefault()
+
+            params_natcats = []
+            window.history.pushState('', '', `?natcats=`)
+
+            filtered_natcats = natcats
+            natcats_result = natcats
+
+            makeFilter()
+        })
+    }
+
     updatePaginationNav()
 }
 
@@ -307,10 +330,15 @@ const setupModal = () => {
 }
 
 const init = async () => {
-    natcats = await fetch('./traits.json?ts=1708600659936').then(res=>res.json()).catch(e=>console.log(e))
+    natcats = await fetch('./traits.json?ts=1708854844216').then(res=>res.json()).catch(e=>console.log(e))
 
-    filtered_natcats = natcats
-    natcats_result = natcats
+    if(params_natcats.length) {
+        filtered_natcats = natcats.filter(n => params_natcats.includes(n.id.toString()))
+        natcats_result = filtered_natcats
+    } else {
+        filtered_natcats = natcats
+        natcats_result = natcats
+    }
 
     makeFilter()
     setupEventHandler()
