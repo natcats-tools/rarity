@@ -1,5 +1,6 @@
 let natcats = []
 let filtered_natcats = []
+let natcats_result = []
 let filter_choices = []
 
 const itemsPerPage = 1000
@@ -27,17 +28,17 @@ const setActivePage = page => {
 
 const showItems = page => {
     const startIndex = (page - 1) * itemsPerPage
-    const itemsToShow = filtered_natcats.slice(startIndex, startIndex + itemsPerPage)
+    const itemsToShow = natcats_result.slice(startIndex, startIndex + itemsPerPage)
 
     let html = '<ul>'
 
     itemsToShow.forEach(item => {
-        let id = item.name.replace('Natcat #','')
+        let { id, name, attributes } = item
         html += `
-            <li title="${item.name}">
+            <li title="${name}">
                 <img class="pixel-image" src="./img/${id}.png" data-bs-toggle="modal" data-bs-target="#modal" data-natcat-id="${id}">
                 <span class="h6"><a href="./img/${id}.png" target="_blank">${id}</a></span>
-                <a href="${item.attributes.find(a => a.trait_type === 'magic_eden_link').value}" class="buy" target="_blank">buy</a>
+                <a href="${attributes.find(a => a.trait_type === 'magic_eden_link').value}" class="buy" target="_blank">buy</a>
             </li>`
     })
 
@@ -50,7 +51,7 @@ const showItems = page => {
 
 
 const setAmount = () => {
-    filteredAmount.innerHTML = `Result: ${filtered_natcats.length} Natcats`
+    filteredAmount.innerHTML = `Result: ${natcats_result.length} Natcats`
     updatePaginationNav()
 }
 
@@ -62,6 +63,8 @@ const selectFilter = (name, value) => {
     }
 
     filtered_natcats = natcats
+
+    document.querySelector('#search').value = ''
 
     // remove them all
     filterChoices.innerHTML = ''
@@ -82,6 +85,8 @@ const selectFilter = (name, value) => {
             </span>`
     })
 
+    natcats_result = filtered_natcats
+
     document.querySelectorAll('.remove-filter').forEach(item => item.addEventListener('click', e => {
         const el = e.target
 
@@ -92,7 +97,7 @@ const selectFilter = (name, value) => {
 }
 
 const updatePaginationNav = () => {
-    numberOfPages = Math.ceil(filtered_natcats.length / itemsPerPage)
+    numberOfPages = Math.ceil(natcats_result.length / itemsPerPage)
 
     let html = `<nav aria-label="Page navigation">
                     <ul class="pagination text-center">
@@ -144,6 +149,18 @@ const updatePaginationNav = () => {
         )
     }
     )    
+}
+
+const setupEventHandler = () => {
+    document.querySelector('#search').addEventListener("keyup", (event) => {
+        if (event.isComposing || event.keyCode === 229) {
+          return;
+        }
+
+        natcats_result = filtered_natcats.filter(n => n.id.toString().includes(document.querySelector('#search').value))
+        setAmount()
+        showItems(1)
+    })
 }
 
 const makeFilter = () => {
@@ -232,6 +249,7 @@ const makeFilter = () => {
     })
 
     setAmount()
+    showItems(1)
 }
 
 const setupModal = () => {
@@ -292,8 +310,10 @@ const init = async () => {
     natcats = await fetch('./traits.json?ts=1708600659936').then(res=>res.json()).catch(e=>console.log(e))
 
     filtered_natcats = natcats
+    natcats_result = natcats
 
     makeFilter()
+    setupEventHandler()
 
     // load first page by default
     showItems(currentPage)
