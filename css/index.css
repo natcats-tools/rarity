@@ -41,6 +41,15 @@
     text-decoration: none;
 }
 
+#result ul li .rank {
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: yellow;
+    font-size: 10px;
+    padding: 2px 3px;
+}
+
 #result ul li .buy:hover {
     text-decoration: underline;
 } 

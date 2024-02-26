@@ -39,12 +39,13 @@ const showItems = page => {
     let html = '<ul>'
 
     itemsToShow.forEach(item => {
-        let { id, name, attributes } = item
+        let { id, name, attributes, rank } = item
         html += `
             <li title="${name}">
                 <img class="pixel-image" src="./img/${id}.png" data-bs-toggle="modal" data-bs-target="#modal" data-natcat-id="${id}">
                 <span class="h6"><a href="./img/${id}.png" target="_blank">${id}</a></span>
                 <a href="${attributes.find(a => a.trait_type === 'magic_eden_link').value}" class="buy" target="_blank">buy</a>
+                <span class='rank'>${rank}</span>
             </li>`
     })
 
@@ -287,7 +288,8 @@ const setupModal = () => {
                 if(cat) {
                     const {
                         attributes,
-                        name
+                        name,
+                        rank
                     } = cat
 
                     const modalTitle = modal.querySelector('.modal-title')
@@ -299,18 +301,23 @@ const setupModal = () => {
 
                     html += '<div class="d-grid gap-2 pt-3">'
                     html += `<a href="${attributes.find(a => a.trait_type === 'magic_eden_link').value}" target="_blank" class="btn btn-magiceden">Go to MagicEden</a>`
-                    html += '</div>'
+                    html +=  `<div style='margin-top: 1rem'>🏆  Rarity Rank: <b>${rank.toLocaleString()}</b></div></div>`;
 
                     html += '</div>'
 
                     html += '<div class="col-12 col-md-8">'
-                    html += `<table class="table table-striped"><tbody>`
+                    html += `<table class="table table-striped"><tr><th>Trait</th><th>Value</th><th>Likelihood</th></tr><tbody>`
 
                     attributes.forEach(attr => {
                         const { trait_type, value } = attr
+                        let rarity = attr.rarity ? attr.rarity : '';
 
                         if(!['magic_eden_link'].includes(trait_type) && ![false, null].includes(value)) {
-                            html += `<tr><td>${trait_type}</td><td>${value}</td></tr>`
+                            if(trait_type != 'inscription_number') {
+                                html += `<tr><td>${trait_type}</td><td>${value}</td><td>${parseFloat(rarity).toFixed(3)}%</td></tr>`
+                            } else {
+                                html += `<tr><td>${trait_type}</td><td>${value}</td><td></td></tr>`
+                            }
                         }
                     })
 
@@ -331,6 +338,26 @@ const setupModal = () => {
 
 const init = async () => {
     natcats = await fetch('./traits.json?ts=1708880751776').then(res=>res.json()).catch(e=>console.log(e))
+    
+    // Determine geometric mean rarity
+    natcats.forEach((natcat) => {
+        let productOfRarities = natcat.attributes.reduce((product, attr) => {
+            if(attr.trait_type !== 'inscription_number' && attr.trait_type !== 'magic_eden_link' && attr.rarity && attr.value !== false) {
+                return product * parseFloat(attr.rarity) / 100;
+            }
+            return product;
+        }, 1);
+
+        // Calculate geometric mean of rarities
+        let geometricMeanRarity = Math.pow(productOfRarities, 1 / natcat.attributes.length);
+
+        // Convert back to percentage and assign
+        natcat.combinedChance = (geometricMeanRarity * 100).toPrecision(5) + '%';
+    });
+
+    // Sort by rarest first and add rarity rank property to natcat
+    natcats.sort((a, b) => parseFloat(a.combinedChance) - parseFloat(b.combinedChance))
+           .forEach((natcat, index) => natcat.rank = index + 1);
 
     if(params_natcats.length) {
         filtered_natcats = natcats.filter(n => params_natcats.includes(n.id.toString()))
